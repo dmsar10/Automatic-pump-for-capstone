@@ -1,0 +1,37 @@
+LiquidCrystal_I2C lcd(0x27, 16, 2);    //tx,rx,power,ground pin (input to arduino)
+AF_DCMotor motor (3,4);               //Using M3 and M4 pin from the motor shield for Pump 1 and Pump 2
+
+int sensor = A2;                      //Using Pin analog A2 for sensor
+
+void setup() 
+{
+  Serial.begin(9600);
+  motor.setSpeed(255);             // 255 =  full throttle (full speed pump)
+  motor.run(RELEASE);
+  pinMode(sensor, INPUT);
+}
+
+void loop() 
+{
+  int value = analogRead(sensor);
+  float range = ( 14.5 + (value * (5.0 / 1023.0))); //Convert resistance number into length, 
+  lcd.begin(16,2);                                 // LCD has 16 coloumn and 2 row
+  lcd.setCursor(0,0);
+  lcd.print("Draft:");
+  lcd.print(range, 2);
+  lcd.print("cm");
+
+  if (range > 0 && range < 100)       //This number for the resistance number that read by the sensor
+    {
+        motor.setSpeed(255);
+        motor.run(RELEASE);         //Pump stop
+        delay(1000);               //not overshoot
+    } 
+
+    else if (range > 101 ) 
+    {
+        motor.setSpeed(255);
+        motor.run(FORWARD);    //Pump start
+        delay(1000);
+    }
+}
